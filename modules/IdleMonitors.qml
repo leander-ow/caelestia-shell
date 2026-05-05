@@ -21,6 +21,8 @@ Scope {
             Quickshell.execDetached(action);
     }
 
+    LogindManager {}
+
     Variants {
         model: GlobalConfig.general.idle.timeouts
 
