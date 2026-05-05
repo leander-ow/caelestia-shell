@@ -327,13 +327,8 @@ For example, to disable the bar on DP-1:
             "criticalLevel": 3
         },
         "idle": {
-            "lockBeforeSleep": true,
             "inhibitWhenAudio": true,
             "timeouts": [
-                {
-                    "timeout": 180,
-                    "idleAction": "lock"
-                },
                 {
                     "timeout": 300,
                     "idleAction": "dpms off",
