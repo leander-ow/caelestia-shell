@@ -75,7 +75,26 @@ Singleton {
         }
     }
 
+    function getAlternateWallpaper(currentPath: string, targetMode: string): string {
+        const match = currentPath.match(/^(.+)-(?:light|dark)\.png$/i);
+        if (!match) return "";
+        
+        const basePath = match[1];
+        const altPath = `${basePath}-${targetMode}.png`;
+        
+        return altPath;
+    }
+
     function setMode(mode: string): void {
+        // Switch Wallpaper
+        const currentWallpaper = Wallpapers.actualCurrent;
+        const altWallpaper = getAlternateWallpaper(currentWallpaper, mode);
+        
+        if (altWallpaper !== "") {
+            Wallpapers.setWallpaper(altWallpaper);
+        }
+        
+        // Switch Mode
         Quickshell.execDetached(["caelestia", "scheme", "set", "--notify", "-m", mode]);
     }
 
