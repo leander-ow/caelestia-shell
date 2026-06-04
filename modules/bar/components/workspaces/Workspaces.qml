@@ -60,6 +60,19 @@ StyledClippingRect {
             }
         }
 
+        Loader {
+            asynchronous: true
+            anchors.horizontalCenter: parent.horizontalCenter
+            active: Config.bar.workspaces.activeIndicator
+
+            sourceComponent: ActiveIndicator {
+                activeWsId: root.activeWsId
+                workspaces: workspaces
+                mask: layout
+                fullscreen: root.fullscreen
+            }
+        }
+
         ColumnLayout {
             id: layout
 
@@ -76,19 +89,6 @@ StyledClippingRect {
                     occupied: root.occupied
                     groupOffset: root.groupOffset
                 }
-            }
-        }
-
-        Loader {
-            asynchronous: true
-            anchors.horizontalCenter: parent.horizontalCenter
-            active: Config.bar.workspaces.activeIndicator
-
-            sourceComponent: ActiveIndicator {
-                activeWsId: root.activeWsId
-                workspaces: workspaces
-                mask: layout
-                fullscreen: root.fullscreen
             }
         }
 

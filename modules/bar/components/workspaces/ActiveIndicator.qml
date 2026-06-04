@@ -3,10 +3,9 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Caelestia.Config
 import qs.components
-import qs.components.effects
 import qs.services
 
-StyledRect {
+Rectangle {
     id: root
 
     required property int activeWsId
@@ -49,18 +48,7 @@ StyledRect {
     radius: Tokens.rounding.full
     color: Colours.palette.m3primary
 
-    Colouriser {
-        source: root.mask
-        sourceColor: Colours.palette.m3onSurface
-        colorizationColor: Colours.palette.m3onPrimary
-
-        x: 0
-        y: -parent.offset
-        implicitWidth: root.mask.implicitWidth
-        implicitHeight: root.mask.implicitHeight
-
-        anchors.horizontalCenter: parent.horizontalCenter
-    }
+    anchors.horizontalCenter: parent.horizontalCenter
 
     Behavior on leading {
         enabled: root.Config.bar.workspaces.activeTrail
