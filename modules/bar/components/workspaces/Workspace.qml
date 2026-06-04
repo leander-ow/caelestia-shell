@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Widgets
 import Caelestia.Config
 import qs.components
 import qs.services
@@ -50,7 +51,11 @@ ColumnLayout {
             const activeLabel = Config.bar.workspaces.activeLabel || (root.isOccupied ? occupiedLabel : label);
             return root.activeWsId === root.ws ? activeLabel : root.isOccupied ? occupiedLabel : label;
         }
-        color: Config.bar.workspaces.occupiedBg || root.isOccupied || root.activeWsId === root.ws ? Colours.palette.m3onSurface : Colours.layer(Colours.palette.m3outlineVariant, 2)
+        color: root.activeWsId === root.ws
+            ? Colours.palette.m3surfaceContainer
+            : (Config.bar.workspaces.occupiedBg || root.isOccupied)
+                ? Colours.palette.m3onSurface
+                : Colours.layer(Colours.palette.m3outlineVariant, 2)
         verticalAlignment: Qt.AlignVCenter
     }
 
@@ -99,14 +104,37 @@ ColumnLayout {
                     }
                 }
 
-                MaterialIcon {
-                    required property var modelData
-
-                    grade: 0
-                    text: Icons.getAppCategoryIcon(modelData.lastIpcObject.class, "terminal")
-                    color: Colours.palette.m3onSurfaceVariant
-                }
+                delegate: Config.bar.workspaces.appIcons
+                    ? appIconDelegate
+                    : materialIconDelegate
             }
+        }
+    }
+
+    Component {
+        id: appIconDelegate
+
+        IconImage {
+            required property var modelData
+
+            asynchronous: true
+            implicitSize: Tokens.sizes.bar.innerWidth / 2
+
+            source: Icons.getAppIcon(modelData.lastIpcObject.class, "image-missing")
+        }
+    }
+
+    Component {
+        id: materialIconDelegate
+
+        MaterialIcon {
+            required property var modelData
+
+            grade: 0
+            text: Icons.getAppCategoryIcon(modelData.lastIpcObject.class, "terminal")
+            color: root.activeWsId === root.ws
+                ? Colours.palette.m3surfaceContainer
+                : Colours.palette.m3onSurfaceVariant
         }
     }
 
