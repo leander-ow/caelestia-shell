@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Widgets
 import Quickshell.Hyprland
 import Caelestia.Config
 import qs.components
@@ -84,6 +85,41 @@ Item {
         }
     }
 
+    Loader {
+        asynchronous: true
+        active: Config.bar.workspaces.activeIndicator
+        anchors.fill: parent
+
+        sourceComponent: Item {
+            ClippingRectangle {
+                id: indicator
+
+                anchors.left: parent.left
+                anchors.right: parent.right
+
+                y: (view.currentItem?.y ?? 0) - view.contentY
+                implicitHeight: (view.currentItem as SpecialWsDelegate)?.size ?? 0
+
+                color: Colours.palette.m3tertiary
+                radius: Tokens.rounding.full
+
+                anchors.horizontalCenter: parent.horizontalCenter
+
+                Behavior on y {
+                    Anim {
+                        type: Anim.Emphasized
+                    }
+                }
+
+                Behavior on implicitHeight {
+                    Anim {
+                        type: Anim.Emphasized
+                    }
+                }
+            }
+        }
+    }
+
     ListView {
         id: view
 
@@ -155,52 +191,6 @@ Item {
             }
             Anim {
                 properties: "x,y"
-            }
-        }
-    }
-
-    Loader {
-        asynchronous: true
-        active: Config.bar.workspaces.activeIndicator
-        anchors.fill: parent
-
-        sourceComponent: Item {
-            StyledClippingRect {
-                id: indicator
-
-                anchors.left: parent.left
-                anchors.right: parent.right
-
-                y: (view.currentItem?.y ?? 0) - view.contentY
-                implicitHeight: (view.currentItem as SpecialWsDelegate)?.size ?? 0
-
-                color: Colours.palette.m3tertiary
-                radius: Tokens.rounding.full
-
-                Colouriser {
-                    source: view
-                    sourceColor: Colours.palette.m3onSurface
-                    colorizationColor: Colours.palette.m3onTertiary
-
-                    anchors.horizontalCenter: parent.horizontalCenter
-
-                    x: 0
-                    y: -indicator.y
-                    implicitWidth: view.width
-                    implicitHeight: view.height
-                }
-
-                Behavior on y {
-                    Anim {
-                        type: Anim.Emphasized
-                    }
-                }
-
-                Behavior on implicitHeight {
-                    Anim {
-                        type: Anim.Emphasized
-                    }
-                }
             }
         }
     }
@@ -295,6 +285,10 @@ Item {
                     fill: 1
                     text: ws.icon
                     verticalAlignment: Qt.AlignVCenter
+
+                    color: modelData.name === root.activeSpecial
+                        ? Colours.palette.m3surfaceContainer
+                        : Colours.palette.m3onSurface
                 }
             }
 
@@ -304,6 +298,10 @@ Item {
                 StyledText {
                     text: ws.icon
                     verticalAlignment: Qt.AlignVCenter
+
+                    color: modelData.name === root.activeSpecial
+                        ? Colours.palette.m3surfaceContainer
+                        : Colours.palette.m3onSurface
                 }
             }
         }
@@ -352,13 +350,37 @@ Item {
                         }
                     }
 
-                    MaterialIcon {
-                        required property var modelData
+                    delegate: Config.bar.workspaces.appIcons
+                        ? appIconDelegate
+                        : materialIconDelegate
 
-                        grade: 0
-                        text: Icons.getAppCategoryIcon(modelData.lastIpcObject.class, "terminal")
-                        color: Colours.palette.m3onSurfaceVariant
-                    }
+                }
+            }
+
+            Component {
+                id: appIconDelegate
+
+                IconImage {
+                    required property var modelData
+
+                    asynchronous: true
+                    implicitSize: Tokens.sizes.bar.innerWidth / 2
+
+                    source: Icons.getAppIcon(modelData.lastIpcObject.class, "image-missing")
+                }
+            }
+
+            Component {
+                id: materialIconDelegate
+
+                MaterialIcon {
+                    required property var modelData
+
+                    grade: 0
+                    text: Icons.getAppCategoryIcon(modelData.lastIpcObject.class, "terminal")
+                    color: modelData.name === root.activeSpecial
+                        ? Colours.palette.m3surfaceContainer
+                        : Colours.palette.m3onSurface
                 }
             }
 
