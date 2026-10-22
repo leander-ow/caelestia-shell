@@ -1,12 +1,15 @@
 #include "cpu.hpp"
 
-#include "sensorslib.hpp"
-
-#include <cmath>
 #include <qfile.h>
 #include <qregularexpression.h>
 
+#include <cmath>
+
+#include "sensorslib.hpp"
+
 namespace caelestia::services {
+
+using Qt::StringLiterals::operator""_s;
 
 Cpu::Cpu(QObject* parent)
     : TickingService(parent) {
@@ -34,15 +37,15 @@ void Cpu::tick() {
 }
 
 void Cpu::readNameOnce() {
-    QFile f(QStringLiteral("/proc/cpuinfo"));
+    QFile f(u"/proc/cpuinfo"_s);
     if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) {
         return;
     }
     const QByteArray data = f.readAll();
     f.close();
 
-    static const QRegularExpression re(QStringLiteral("model name\\s*:\\s*(.+)"));
-    const auto match = re.match(QString::fromLatin1(data));
+    static const QRegularExpression k_re(u"model name\\s*:\\s*(.+)"_s);
+    const auto match = k_re.match(QString::fromLatin1(data));
     if (!match.hasMatch()) {
         return;
     }
@@ -53,20 +56,20 @@ void Cpu::readNameOnce() {
         return;
     }
     m_name = cleaned;
-    Q_EMIT nameChanged();
+    emit nameChanged();
 }
 
 void Cpu::refreshPercentage() {
-    QFile f(QStringLiteral("/proc/stat"));
+    QFile f(u"/proc/stat"_s);
     if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) {
         return;
     }
     const QByteArray data = f.readAll();
     f.close();
 
-    static const QRegularExpression re(
-        QStringLiteral("^cpu\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)"));
-    const auto match = re.match(QString::fromLatin1(data));
+    static const QRegularExpression k_re(
+        u"^cpu\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)"_s);
+    const auto match = k_re.match(QString::fromLatin1(data));
     if (!match.hasMatch()) {
         return;
     }
@@ -90,7 +93,7 @@ void Cpu::refreshPercentage() {
 
     if (std::abs(newPerc - m_percentage) > 0.0001) {
         m_percentage = newPerc;
-        Q_EMIT percentageChanged();
+        emit percentageChanged();
     }
 }
 
@@ -99,18 +102,17 @@ void Cpu::refreshTemperature() {
     const qreal newTemp = t.value_or(0.0);
     if (std::abs(newTemp - m_temperature) > 0.05) {
         m_temperature = newTemp;
-        Q_EMIT temperatureChanged();
+        emit temperatureChanged();
     }
 }
 
 QString Cpu::cleanName(QString s) {
-    static const QRegularExpression noise(
-        QStringLiteral("\\(R\\)|\\(TM\\)|CPU|\\d+(?:th|nd|rd|st) Gen |Core |Processor"),
-        QRegularExpression::CaseInsensitiveOption);
-    static const QRegularExpression spaces(QStringLiteral("\\s+"));
+    static const QRegularExpression k_noise(
+        u"\\(R\\)|\\(TM\\)|CPU|\\d+(?:th|nd|rd|st) Gen |Core |Processor"_s, QRegularExpression::CaseInsensitiveOption);
+    static const QRegularExpression k_spaces(u"\\s+"_s);
 
-    s.replace(noise, QString());
-    s.replace(spaces, QStringLiteral(" "));
+    s.replace(k_noise, {});
+    s.replace(k_spaces, u" "_s);
     return s.trimmed();
 }
 

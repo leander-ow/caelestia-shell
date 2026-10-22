@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import Caelestia
 import Caelestia.Config
 import qs.components
 import qs.services
@@ -92,8 +93,9 @@ ConnectedRect {
                     return contentWin ? contentWin.interactionWrapper : (win as QsWindow).contentItem;
                 }
                 anchors.fill: parent
-                hoverEnabled: true
                 enabled: popup.open
+                hoverEnabled: popup.open
+                cursorShape: popup.open ? Qt.ArrowCursor : undefined
                 z: popup.animDriver > 0 ? 1 : 0
 
                 onClicked: popup.open = false
@@ -102,11 +104,11 @@ ConnectedRect {
                     id: popup
 
                     x: {
-                        tWatcher.transform;
+                        CUtils.dependency(tWatcher.transform);
                         return triggerArea.mapToItem(area.parent, 0, 0).x;
                     }
                     y: {
-                        tWatcher.transform;
+                        CUtils.dependency(tWatcher.transform);
                         return triggerArea.mapToItem(area.parent, 0, 0).y;
                     }
                     padding: Tokens.padding.small

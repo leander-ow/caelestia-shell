@@ -1,17 +1,16 @@
 import QtQuick
-import Quickshell
 import Caelestia.Config
 import Caelestia.Models
+import Caelestia.Multimedia
 import qs.components
 import qs.components.effects
-import qs.components.images
 import qs.services
 
 Item {
     id: root
 
     required property FileSystemEntry modelData
-    required property DrawerVisibilities visibilities
+    required property ScreenState screenState
 
     scale: 0.5
     opacity: 0
@@ -29,7 +28,7 @@ Item {
         radius: Tokens.rounding.large
         onClicked: {
             Wallpapers.setWallpaper(root.modelData.path);
-            root.visibilities.launcher = false;
+            root.screenState.launcher = false;
         }
     }
 
@@ -46,7 +45,7 @@ Item {
         }
     }
 
-    StyledClippingRect {
+    ClipRect {
         id: image
 
         anchors.horizontalCenter: parent.horizontalCenter
@@ -64,14 +63,10 @@ Item {
             fontStyle: Tokens.font.icon.builders.extraLarge.scale(2).weight(Font.DemiBold).build()
         }
 
-        CachingImage {
+        Visual {
             anchors.fill: parent
-            path: root.modelData.path
-            smooth: !root.PathView.view.moving
-            sourceSize: {
-                const dpr = (QsWindow.window as QsWindow)?.devicePixelRatio ?? 1;
-                return Qt.size(image.implicitWidth * dpr, image.implicitHeight * dpr);
-            }
+            source: root.modelData.path
+            playing: root.PathView.isCurrentItem
         }
     }
 

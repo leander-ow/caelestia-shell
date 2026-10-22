@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import Caelestia.Config
+import Caelestia.I18n
 import qs.components
 import qs.services
 
@@ -12,6 +13,12 @@ StyledRect {
     readonly property color colour: Colours.palette.m3tertiary
     readonly property int padding: Config.bar.clock.background ? Tokens.padding.medium : Tokens.padding.extraSmall
     readonly property var font: Tokens.font.body.builders.small.scale(1.1)
+
+    function fontFor(text: string, metricWidth: int): font {
+        // We don't count seconds for the max width because it changes too often
+        const scale = text === "11" ? 1.15 : Math.min(1.05, Math.max(hourMetrics.width, minMetrics.width) / metricWidth);
+        return root.font.width(scale * 100).letterSpacing(scale).build();
+    }
 
     implicitWidth: Tokens.sizes.bar.innerWidth
     implicitHeight: layout.implicitHeight + root.padding * 2
@@ -37,30 +44,45 @@ StyledRect {
             }
         }
 
-        StyledText {
+        Loader {
             Layout.alignment: Qt.AlignHCenter
-            visible: Config.bar.clock.showDate
+            asynchronous: true
+            active: Config.bar.clock.showDate
+            visible: active
 
-            horizontalAlignment: StyledText.AlignHCenter
-            text: Time.format("ddd\nd")
-            font: Tokens.font.body.small
-            color: root.colour
-        }
+            sourceComponent: ColumnLayout {
+                spacing: layout.spacing - 4
 
-        Rectangle {
-            Layout.fillWidth: true
-            visible: Config.bar.clock.showDate
-            implicitHeight: 1
-            color: Colours.palette.m3outlineVariant
+                StyledText {
+                    Layout.alignment: Qt.AlignHCenter
+                    text: Time.format("ddd")
+                    font: Tokens.font.body.builders.small.scale(0.9).build()
+                    color: root.colour
+                }
+
+                StyledText {
+                    Layout.alignment: Qt.AlignHCenter
+                    text: Time.format("d")
+                    font: root.font.scale(1.1).build()
+                    color: root.colour
+                }
+
+                StyledRect {
+                    Layout.fillWidth: true
+                    Layout.leftMargin: -Tokens.padding.extraSmall
+                    Layout.rightMargin: -Tokens.padding.extraSmall
+                    Layout.topMargin: 4
+                    Layout.bottomMargin: Tokens.padding.extraSmall / 2
+                    implicitHeight: 1
+                    color: Colours.palette.m3outlineVariant
+                }
+            }
         }
 
         StyledText {
             Layout.alignment: Qt.AlignHCenter
             text: Time.hourStr
-            font: {
-                const scale = text === "11" ? 1.15 : Math.min(1.05, Math.max(hourMetrics.width, minMetrics.width) / hourMetrics.width);
-                return root.font.width(scale * 100).letterSpacing(scale).build();
-            }
+            font: root.fontFor(text, hourMetrics.width)
             color: root.colour
 
             TextMetrics {
@@ -75,10 +97,7 @@ StyledRect {
             Layout.topMargin: -parent.spacing - 4
             Layout.alignment: Qt.AlignHCenter
             text: Time.minuteStr
-            font: {
-                const scale = text === "11" ? 1.15 : Math.min(1.05, Math.max(hourMetrics.width, minMetrics.width) / minMetrics.width);
-                return root.font.width(scale * 100).letterSpacing(scale).build();
-            }
+            font: root.fontFor(text, minMetrics.width)
             color: root.colour
 
             TextMetrics {
@@ -93,7 +112,28 @@ StyledRect {
             Layout.topMargin: -parent.spacing - 4
             Layout.alignment: Qt.AlignHCenter
             asynchronous: true
-            active: GlobalConfig.services.useTwelveHourClock
+            active: Config.bar.clock.showSeconds
+            visible: active
+
+            sourceComponent: StyledText {
+                text: Time.format("ss")
+                font: root.fontFor(text, secMetrics.width)
+                color: root.colour
+
+                TextMetrics {
+                    id: secMetrics
+
+                    font: root.font.build()
+                    text: Time.format("ss")
+                }
+            }
+        }
+
+        Loader {
+            Layout.topMargin: -parent.spacing - 4
+            Layout.alignment: Qt.AlignHCenter
+            asynchronous: true
+            active: Units.twelveHourClock
             visible: active
 
             sourceComponent: StyledText {
