@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import Caelestia
 import Caelestia.Config
 import qs.components
 import qs.components.effects
@@ -41,6 +42,8 @@ MouseArea {
     anchors.fill: parent
 
     enabled: expanded
+    hoverEnabled: expanded
+    cursorShape: expanded ? Qt.ArrowCursor : undefined
     onClicked: expanded = false
 
     opacity: expanded ? 1 : 0
@@ -63,7 +66,7 @@ MouseArea {
         id: menu
 
         x: {
-            watcher.transform; // mapToItem is not reactive so this forces updates
+            CUtils.dependency(watcher.transform); // mapToItem is not reactive so this forces updates
             const item = root.attachTo;
             let off = root.attachSideX === Menu.Left ? 0 : item.width;
             if (root.thisSideX === Menu.Right)
@@ -71,7 +74,7 @@ MouseArea {
             return item.mapToItem(root.parent, off, 0).x + root.marginX;
         }
         y: {
-            watcher.transform; // mapToItem is not reactive so this forces updates
+            CUtils.dependency(watcher.transform); // mapToItem is not reactive so this forces updates
             const item = root.attachTo;
             let off = root.attachSideY === Menu.Top ? 0 : item.height;
             if (root.thisSideY === Menu.Bottom)
